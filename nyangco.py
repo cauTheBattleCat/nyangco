@@ -10,10 +10,10 @@ stage1 = Scene("한국","res/wallpaper/stage1.png")
 stage2 = Scene("일본","res/wallpaper/stage2.png")
 stage3 = Scene("중국","res/wallpaper/stage3.png")
 
-stageNum = 1
-prevScene = mainScene
-nowScene = mainScene
-stageObject = None
+stageNum = 1  # 현재 스테이지 번호 저장
+prevScene = mainScene # 이전 Scene 저장
+nowScene = mainScene # 현재 Scene 저장
+stageObject = None # 현재 Stage 객체 저장
 
 FRIEND = 0
 ENEMY = 1
@@ -24,6 +24,7 @@ STAGE3 = 3
 
 class Stage():
   def __init__(self,stage):
+    #TODO Enemy 객체 생성하는 부분
     if(stage == STAGE1):
       self.friend = Friend(100,1000,stage)
       catBtns[0].show()
@@ -31,25 +32,25 @@ class Stage():
       self.friend = Friend(500,2000,stage)
       for i in range(0,3):
         catBtns[i].show()
-      birdCatBtn.locate(nowScene,590,10)
-      titanCatBtn.locate(nowScene,720,10)
     elif(stage == STAGE3):
       self.friend = Friend(1000,3000,stage)
       for i in range(0,5):
         catBtns[i].show()
+
+#TODO Enemy class 구현.
 
 class Friend():
   def createFriend(self,type):
     isEmpty = False
     index = 0
     for i in range(0,5):
-      if self.friends[i] == None:
+      if self.friends[i] == None:  # 아군이 5명이 넘지 않을 때
         isEmpty = True
         index = i
         break
 
     if isEmpty:
-      if self.moneyNow >= catBtns[type].price:
+      if self.moneyNow >= catBtns[type].price: # 돈이 병사 가격보다 많을 때
         if type == 0 :
           self.friends[index] = CatSoldier()
         elif type == 1:
@@ -64,6 +65,7 @@ class Friend():
         self.moneyNow = self.moneyNow - catBtns[type].price
         catBtnsDisable[type].show()
 
+        # 캐릭터 위에 작대기 2초동안 표시
         def onTimeout():
           catBtnsDisable[type].hide()
         timer = Timer(2)
@@ -72,7 +74,7 @@ class Friend():
 
 
 
-  def startTimer(self):
+  def startTimer(self):  # 돈 계산해서 화면에 표시하는 함수
     self.timer = threading.Timer(1, self.startTimer)
 
     if self.moneyNow + 5 <= self.moneyMax:
@@ -148,6 +150,9 @@ class Soldier(Object):
     self.move = move
     self.price = price
 
+# TODO EnemySolider 클래스 구현. Soldier를 상속받아서 movePos 함수 반대로 정의
+# TODO EnemySolider 클래스를 상속받는 각각의 적군 클래스 작성.
+
 class FriendSoldier(Soldier):
   def movePos(self):
     self.timer = threading.Timer(1, self.movePos)
@@ -189,7 +194,7 @@ class Castle():
     self.status = status
     self.type = type
 
-class Point(Object):
+class Point(Object):  # 지도에서 각 지역별 표시
   def __init__(self,file,type):
     super().__init__(file)
     self.type = type
@@ -354,3 +359,10 @@ def hidePauseBox():
   exitBtn.hide()
 
 startGame(mainScene)
+
+#구현해야하는 부분
+#- 적군 캐릭터 생성
+#- 각 캐릭터별 속성 정의
+#- 공격 구현
+
+#한국-일본-중국 순서
