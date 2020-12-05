@@ -26,14 +26,52 @@ class Stage():
   def __init__(self,stage):
     if(stage == STAGE1):
       self.friend = Friend(100,1000,stage)
+      catBtns[0].show()
     elif(stage == STAGE2):
       self.friend = Friend(500,2000,stage)
+      for i in range(0,3):
+        catBtns[i].show()
+      birdCatBtn.locate(nowScene,590,10)
+      titanCatBtn.locate(nowScene,720,10)
     elif(stage == STAGE3):
       self.friend = Friend(1000,3000,stage)
-    # 타이머 생성
-    # 아군객체 생성, 적군 객체 생성
+      for i in range(0,5):
+        catBtns[i].show()
 
 class Friend():
+  def createFriend(self,type):
+    isEmpty = False
+    index = 0
+    for i in range(0,5):
+      if self.friends[i] == None:
+        isEmpty = True
+        index = i
+        break
+
+    if isEmpty:
+      if self.moneyNow >= catBtns[type].price:
+        if type == 0 :
+          self.friends[index] = CatSoldier()
+        elif type == 1:
+          self.friends[index] = TankCatSoldier()
+        elif type == 2:
+          self.friends[index] = AxeCatSoldier()
+        elif type == 3:
+          self.friends[index] = BirdCatSoldier()
+        elif type == 4:
+          self.friends[index] = TitanCatSoldier()
+
+        self.moneyNow = self.moneyNow - catBtns[type].price
+        catBtnsDisable[type].show()
+
+        def onTimeout():
+          catBtnsDisable[type].hide()
+        timer = Timer(2)
+        timer.start()
+        timer.onTimeout = onTimeout
+
+
+
   def startTimer(self):
     self.timer = threading.Timer(1, self.startTimer)
 
@@ -104,6 +142,30 @@ class Friend():
 
     self.startTimer()
 
+class Soldier():
+  def __init__(self,price):
+    self.price = price
+
+class CatSoldier(Soldier):
+  def __init__(self):
+    super().__init__(price = 50)
+
+class TankCatSoldier(Soldier):
+  def __init__(self):
+    super().__init__(price = 100)
+
+class AxeCatSoldier(Soldier):
+  def __init__(self):
+    super().__init__(price = 200)
+
+class BirdCatSoldier(Soldier):
+  def __init__(self):
+    super().__init__(price = 400)
+
+class TitanCatSoldier(Soldier):
+  def __init__(self):
+    super().__init__(price = 1000)
+
 class Castle():
   def __init__(self,type,status):
     self.status = status
@@ -160,9 +222,20 @@ continueBtn.locate(stage1, 530,330)
 exitBtn = Object("res/etc/exit.png")
 exitBtn.locate(stage1, 530,230)
 
+class CatBtn(Object):
+  def onBtnClick(self,x,y,action):
+    stageObject.friend.createFriend(self.type)
+  def __init__(self,file,type,price):
+    super().__init__(file)
+    self.type = type
+    self.price = price
+    self.onMouseAction = self.onBtnClick
+
 
 catCastle = Object("res/castle/cat_castle.png")
 enCastle = Object("res/castle/en_castle.png")
+catBtns = [CatBtn("res/etc/cat.png",0,50),CatBtn("res/etc/tankcat.png",1,100),CatBtn("res/etc/axecat.png",2,200),CatBtn("res/etc/birdcat.png",3,400), CatBtn("res/etc/titan.png",4,1000)]
+catBtnsDisable = [Object("res/etc/none.png") for i in range(5)]
 
 point1 = Point("res/etc/point.png",STAGE1)  #한국
 point1.locate(mapScene, 580,335)
@@ -217,6 +290,12 @@ def startBtn_onClick(x,y,action):
     enCastle.locate(nowScene,0,150)
     enCastle.setScale(0.8)
     enCastle.show()
+
+    xPos = 230
+    for i in range(0,5):
+      catBtns[i].locate(nowScene,xPos,10)
+      catBtnsDisable[i].locate(nowScene,xPos,10)
+      xPos = xPos + 150
 
     nowScene.enter()
     pauseBtn.locate(nowScene, 0,600)
