@@ -142,29 +142,47 @@ class Friend():
 
     self.startTimer()
 
-class Soldier():
-  def __init__(self,price):
+class Soldier(Object):
+  def __init__(self,file,price,move):
+    super().__init__(file)
+    self.move = move
     self.price = price
 
-class CatSoldier(Soldier):
-  def __init__(self):
-    super().__init__(price = 50)
+class FriendSoldier(Soldier):
+  def movePos(self):
+    self.timer = threading.Timer(1, self.movePos)
+    self.xPos = self.xPos - self.move
+    self.locate(nowScene, self.xPos,self.yPos)
+    self.timer.start()
 
-class TankCatSoldier(Soldier):
-  def __init__(self):
-    super().__init__(price = 100)
+  def __init__(self,file,price,move,xPos = 1000,yPos = 180):
+    super().__init__(file,price,move)
+    self.xPos = xPos
+    self.yPos = yPos
+    self.locate(nowScene,xPos,yPos)
+    self.show()
+    self.movePos()
+    
 
-class AxeCatSoldier(Soldier):
+class CatSoldier(FriendSoldier):
   def __init__(self):
-    super().__init__(price = 200)
+    super().__init__(file="res/character/cat1_move1.png",price = 50,move = 10)
 
-class BirdCatSoldier(Soldier):
+class TankCatSoldier(FriendSoldier):
   def __init__(self):
-    super().__init__(price = 400)
+    super().__init__(file="res/character/tankcat_move1.png",price = 100,move = 8)
 
-class TitanCatSoldier(Soldier):
+class AxeCatSoldier(FriendSoldier):
   def __init__(self):
-    super().__init__(price = 1000)
+    super().__init__(file="res/character/axecat_move1.png",price = 200,move = 12)
+
+class BirdCatSoldier(FriendSoldier):
+  def __init__(self):
+    super().__init__(file="res/character/cat_bird_move1.png",price = 400,move = 10,xPos = 1000)
+
+class TitanCatSoldier(FriendSoldier):
+  def __init__(self):
+    super().__init__(file="res/character/titan_move1.png",price = 1000,move = 10,xPos = 1000)
 
 class Castle():
   def __init__(self,type,status):
@@ -196,7 +214,8 @@ class Point(Object):
       stageNum = STAGE3
 
 gameBtn = Object("res/etc/game.png")
-gameBtn.locate(mainScene, 200,200)
+gameBtn.locate(mainScene, 400,200)
+gameBtn.setScale(0.7)
 gameBtn.show()
 
 startBtn = Object("res/etc/start.png")
@@ -205,8 +224,7 @@ startBtn.setScale(0.5)
 startBtn.show()
 
 startImg = Object("res/wallpaper/start.png")
-startImg.locate(mapScene,100,100)
-startImg.setScale(0.2)
+startImg.locate(mapScene,0,0)
 
 backBtn = Object("res/etc/back.png")
 
