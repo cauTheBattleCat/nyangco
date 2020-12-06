@@ -1,7 +1,8 @@
 from bangtal import *
-import time
 
+import time
 import threading
+import random
 
 mainScene = Scene("메인", "res/wallpaper/main.png")
 mapScene = Scene("지도", "res/wallpaper/ingame2.png")
@@ -27,17 +28,60 @@ class Stage():
     #TODO Enemy 객체 생성하는 부분
     if(stage == STAGE1):
       self.friend = Friend(100,1000,stage)
+      self.enemy = Enemy(1000,stage)
       catBtns[0].show()
     elif(stage == STAGE2):
       self.friend = Friend(500,2000,stage)
+      self.enemy = Enemy(2000,stage)
       for i in range(0,3):
         catBtns[i].show()
     elif(stage == STAGE3):
       self.friend = Friend(1000,3000,stage)
+      self.enemy = Enemy(3000,stage)
       for i in range(0,5):
         catBtns[i].show()
 
-#TODO Enemy class 구현.
+class Enemy():
+  def createFriend(self):
+    self.timer = threading.Timer(7,self.createFriend)
+    isEmpty = False
+    index = 0
+    for i in range(0,5):
+      if self.friends[i] == None:
+        isEmpty = True
+        index = i
+        break
+
+    if isEmpty:
+      if self.enemyOrder[self.i] == 0:
+        self.friends[index] = DogSoldier(index)
+      elif self.enemyOrder[self.i] == 1:
+        self.friends[index] = SnakeSoldier(index)
+      elif self.enemyOrder[self.i] == 2:
+        self.friends[index] = SheepSoldier(index)
+      elif self.enemyOrder[self.i] == 3:
+        self.friends[index] = BearSoldier(index)
+      elif self.enemyOrder[self.i] == 4:
+        self.friends[index] = CySoldier(index)
+      self.i = self.i + 1
+
+    self.timer.start()
+
+
+  def __init__(self,castleStat,stage):
+    self.castle = Castle(ENEMY,castleStat)
+    self.friends = [None for i in range(5)]
+    self.i = 0
+    
+    if stage == STAGE1:
+      self.enemyOrder = [0 for i in range(20)]
+    elif stage == STAGE2:
+      self.enemyOrder = [0,1,0,2,0,1,0,2,0,1,0,2,0,1,0,2,0,1]
+    elif stage == STAGE3:
+      self.enemyOrder = [0,0,0,2,0,1,1,0,2,3,0,0,4,0,1,2,0,3]
+    
+    self.createFriend()
+
 
 class Friend():
   def createFriend(self,type):
@@ -52,15 +96,15 @@ class Friend():
     if isEmpty:
       if self.moneyNow >= catBtns[type].price: # 돈이 병사 가격보다 많을 때
         if type == 0 :
-          self.friends[index] = CatSoldier()
+          self.friends[index] = CatSoldier(index)
         elif type == 1:
-          self.friends[index] = TankCatSoldier()
+          self.friends[index] = TankCatSoldier(index)
         elif type == 2:
-          self.friends[index] = AxeCatSoldier()
+          self.friends[index] = AxeCatSoldier(index)
         elif type == 3:
-          self.friends[index] = BirdCatSoldier()
+          self.friends[index] = BirdCatSoldier(index)
         elif type == 4:
-          self.friends[index] = TitanCatSoldier()
+          self.friends[index] = TitanCatSoldier(index)
 
         self.moneyNow = self.moneyNow - catBtns[type].price
         catBtnsDisable[type].show()
@@ -77,31 +121,22 @@ class Friend():
   def startTimer(self):  # 돈 계산해서 화면에 표시하는 함수
     self.timer = threading.Timer(1, self.startTimer)
 
-    if self.moneyNow + 5 <= self.moneyMax:
-      self.moneyNow = self.moneyNow + 5
+    if self.moneyNow + 10 <= self.moneyMax:
+      self.moneyNow = self.moneyNow + 10
     
     rest = self.moneyNow
 
-    if int(self.moneyNow / 1000) > 0:
-      self.moneyThou.setImage(f"res/etc/{int(self.moneyNow / 1000)}.png")
-      rest = self.moneyNow - int(self.moneyNow / 1000)*1000
-      self.moneyThou.show()
-    else:
-      self.moneyThou.hide()
+    self.moneyThou.setImage(f"res/etc/{int(self.moneyNow / 1000)}.png")
+    rest = self.moneyNow - int(self.moneyNow / 1000)*1000
+    self.moneyThou.show()
 
-    if int(rest/100) > 0:
-      self.moneyHun.setImage(f"res/etc/{int(rest / 100)}.png")
-      rest = self.moneyNow - int(self.moneyNow / 100)*100
-      self.moneyHun.show()
-    else:
-      self.moneyHun.hide()
+    self.moneyHun.setImage(f"res/etc/{int(rest / 100)}.png")
+    rest = self.moneyNow - int(self.moneyNow / 100)*100
+    self.moneyHun.show()
 
-    if int(rest/10) > 0:
-      self.moneyTens.setImage(f"res/etc/{int(rest/10)}.png")
-      rest = self.moneyNow - int(self.moneyNow / 10)*10
-      self.moneyTens.show()
-    else:
-      self.moneyTens.hide()
+    self.moneyTens.setImage(f"res/etc/{int(rest/10)}.png")
+    rest = self.moneyNow - int(self.moneyNow / 10)*10
+    self.moneyTens.show()
 
     self.moneyUnits.setImage(f"res/etc/{rest}.png")
     self.moneyUnits.show()
@@ -114,7 +149,6 @@ class Friend():
   def onMoneyTimeout(self):
     if self.moneyNow + 5 <= self.moneyMax:
       self.moneyNow = self.moneyNow + 5
-      print(self.moneyNow)
 
   def __init__(self,moneyMax,castleStat,stage):
     self.moneyMax = moneyMax
@@ -145,49 +179,141 @@ class Friend():
     self.startTimer()
 
 class Soldier(Object):
-  def __init__(self,file,price,move):
+  def __init__(self,file,move):
     super().__init__(file)
     self.move = move
-    self.price = price
 
-# TODO EnemySolider 클래스 구현. Soldier를 상속받아서 movePos 함수 반대로 정의
-# TODO EnemySolider 클래스를 상속받는 각각의 적군 클래스 작성.
+class EnemySoldier(Soldier):
+  def receiveAttack(self,damage,index):
+    self.power = self.power - damage
+    print('enemy')
+    print(self.power)
+    if self.power < 0:
+      stageObject.enemy.friends[index] = None
+      self.hide()
+      self.attack = 0
+      self.attackTimer.cancel()
 
-class FriendSoldier(Soldier):
+  def attackOp(self):
+    self.attackTimer = threading.Timer(self.interval,self.attackOp)
+    while(True):
+      attackIndex = random.randrange(0,5)
+      if stageObject.friend.friends[attackIndex] != None:
+        break
+    
+    stageObject.friend.friends[attackIndex].receiveAttack(self.attack,attackIndex)
+    self.attackTimer.start()
+
   def movePos(self):
-    self.timer = threading.Timer(1, self.movePos)
-    self.xPos = self.xPos - self.move
-    self.locate(nowScene, self.xPos,self.yPos)
-    self.timer.start()
+    self.moveTimer = threading.Timer(1, self.movePos)
+    if (self.index == 0 and self.xPos + self.move <= 590) or (self.index == 1 and self.xPos + self.move <= 575) or (self.index == 2 and self.xPos + self.move <= 550) or (self.index == 3 and self.xPos + self.move <= 525) or (self.index == 4 and self.xPos + self.move <= 500):
+      self.xPos = self.xPos + self.move
+      self.locate(nowScene, self.xPos,self.yPos)
+    else:
+      self.moveTimer.cancel()
+      self.attackOp()
 
-  def __init__(self,file,price,move,xPos = 1000,yPos = 180):
-    super().__init__(file,price,move)
+    self.moveTimer.start()
+
+  def __init__(self,file,index,move,attack,power,interval,xPos = 100,yPos = 180):
+    super().__init__(file,move)
+    self.attack = attack
+    self.power = power
+    self.interval = interval
+    self.index = index
     self.xPos = xPos
     self.yPos = yPos
     self.locate(nowScene,xPos,yPos)
     self.show()
     self.movePos()
+    self.attackTimer = threading.Timer(self.interval,self.attackOp)
+
+class DogSoldier(EnemySoldier):
+  def __init__(self,index):
+    super().__init__(file="res/character/dog_move1.png",index = index,move = 25,attack = 25,power = 90,interval = 1)
+
+class SnakeSoldier(EnemySoldier):
+  def __init__(self,index):
+    super().__init__(file="res/character/snake_move1.png",index = index,move = 40,attack = 30,power = 1000,interval = 1)
+
+class SheepSoldier(EnemySoldier):
+  def __init__(self,index):
+    super().__init__(file="res/character/baabaa_move1.png",index = index,move = 20,attack = 100,power = 350,interval = 2)
+
+class BearSoldier(EnemySoldier):
+  def __init__(self,index):
+    super().__init__(file="res/character/bear_move1.png",index = index,move = 50,attack = 200,power = 500,interval = 3)
+
+class CySoldier(EnemySoldier):
+  def __init__(self,index):
+    super().__init__(file="res/character/cy_move1.png",index = index,move = 50,attack = 300,power = 2000,interval = 8)
+
+class FriendSoldier(Soldier):
+  def receiveAttack(self,damage,index):
+    self.power = self.power - damage
+    print('friend')
+    print(self.power)
+    if self.power < 0:
+      print('dead')
+      stageObject.friend.friends[index] = None
+      self.hide()
+      self.attack = 0
+      self.attackTimer.cancel()
+
+  def attackOp(self):
+    self.attackTimer = threading.Timer(self.interval,self.attackOp)
+    while(True):
+      attackIndex = random.randrange(0,5)
+      if stageObject.enemy.friends[attackIndex] != None:
+        break
+    
+    stageObject.enemy.friends[attackIndex].receiveAttack(self.attack,attackIndex)
+    self.attackTimer.start()
+  def movePos(self):
+    self.moveTimer = threading.Timer(1, self.movePos)
+    if (self.index == 0 and self.xPos - self.move >= 610) or (self.index == 1 and self.xPos - self.move >= 625) or (self.index == 2 and self.xPos - self.move >= 650) or (self.index == 3 and self.xPos - self.move >= 675) or (self.index == 4 and self.xPos - self.move >= 700):
+      self.xPos = self.xPos - self.move
+      self.locate(nowScene, self.xPos,self.yPos)
+    else:
+      self.moveTimer.cancel()
+      self.attackOp()
+
+    self.moveTimer.start()
+
+  def __init__(self,file,index,price,move,attack,power,interval,xPos = 1000,yPos = 180):
+    super().__init__(file,move)
+    self.attack = attack
+    self.power = power
+    self.interval = interval
+    self.index = index
+    self.price = price
+    self.xPos = xPos
+    self.yPos = yPos
+    self.locate(nowScene,xPos,yPos)
+    self.show()
+    self.movePos()
+    self.attackTimer = threading.Timer(self.interval,self.attackOp)
     
 
 class CatSoldier(FriendSoldier):
-  def __init__(self):
-    super().__init__(file="res/character/cat1_move1.png",price = 50,move = 10)
+  def __init__(self,index):
+    super().__init__(file="res/character/cat1_move1.png",index = index,price = 50,move = 50,attack = 20,power = 130,interval = 1)
 
 class TankCatSoldier(FriendSoldier):
-  def __init__(self):
-    super().__init__(file="res/character/tankcat_move1.png",price = 100,move = 8)
+  def __init__(self,index):
+    super().__init__(file="res/character/tankcat_move1.png",index = index,price = 100,move = 40,attack = 5,power = 500,interval = 2)
 
 class AxeCatSoldier(FriendSoldier):
-  def __init__(self):
-    super().__init__(file="res/character/axecat_move1.png",price = 200,move = 12)
+  def __init__(self,index):
+    super().__init__(file="res/character/axecat_move1.png",index = index,price = 200,move = 60,attack = 60,power = 150,interval = 1)
 
 class BirdCatSoldier(FriendSoldier):
-  def __init__(self):
-    super().__init__(file="res/character/cat_bird_move1.png",price = 400,move = 10,xPos = 1000)
+  def __init__(self,index):
+    super().__init__(file="res/character/cat_bird_move1.png",index = index,price = 400,move = 50,attack = 250,power = 700,interval = 2)
 
 class TitanCatSoldier(FriendSoldier):
-  def __init__(self):
-    super().__init__(file="res/character/titan_move1.png",price = 1000,move = 10,xPos = 1000)
+  def __init__(self,index):
+    super().__init__(file="res/character/titan_move1.png",index = index,price = 1000,move = 50,attack = 200,power = 800,interval = 4)
 
 class Castle():
   def __init__(self,type,status):
