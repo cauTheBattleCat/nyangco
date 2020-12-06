@@ -25,7 +25,6 @@ STAGE3 = 3
 
 class Stage():
   def __init__(self,stage):
-    #TODO Enemy 객체 생성하는 부분
     if(stage == STAGE1):
       self.friend = Friend(100,1000,stage)
       self.enemy = Enemy(1000,stage)
@@ -67,6 +66,8 @@ class Enemy():
 
     self.timer.start()
 
+  def endTimer(self):
+    self.timer.cancel()
 
   def __init__(self,castleStat,stage):
     self.castle = EnemyCastle(ENEMY,castleStat)
@@ -76,7 +77,7 @@ class Enemy():
     if stage == STAGE1:
       self.enemyOrder = [0 for i in range(20)]
     elif stage == STAGE2:
-      self.enemyOrder = [0,1,0,2,0,1,0,2,0,1,0,2,0,1,0,2,0,1]
+      self.enemyOrder = [0,1,0,2,0,0,0,2,0,0,0,1,0,0,0,2,0,1]
     elif stage == STAGE3:
       self.enemyOrder = [0,0,0,2,0,1,1,0,2,3,0,0,4,0,1,2,0,3]
     
@@ -94,7 +95,7 @@ class Friend():
         break
 
     if isEmpty:
-      if self.moneyNow >= catBtns[type].price: # 돈이 병사 가격보다 많을 때
+      if self.moneyNow >= catBtns[type].price:  # 돈이 병사 가격보다 많을 때
         if type == 0 :
           self.friends[index] = CatSoldier(index)
         elif type == 1:
@@ -121,8 +122,8 @@ class Friend():
   def startTimer(self):  # 돈 계산해서 화면에 표시하는 함수
     self.timer = threading.Timer(1, self.startTimer)
 
-    if self.moneyNow + 10 <= self.moneyMax:
-      self.moneyNow = self.moneyNow + 10
+    if self.moneyNow + 5*stageNum <= self.moneyMax:
+      self.moneyNow = self.moneyNow + 5*stageNum
     
     rest = self.moneyNow
 
@@ -146,9 +147,6 @@ class Friend():
   def endTimer(self):
     self.timer.cancel()
 
-  def onMoneyTimeout(self):
-    if self.moneyNow + 5 <= self.moneyMax:
-      self.moneyNow = self.moneyNow + 5
 
   def __init__(self,moneyMax,castleStat,stage):
     self.moneyMax = moneyMax
@@ -186,8 +184,6 @@ class Soldier(Object):
 class EnemySoldier(Soldier):
   def receiveAttack(self,damage,index):
     self.power = self.power - damage
-    print('enemy')
-    print(self.power)
     if self.power < 0:
       stageObject.enemy.friends[index] = None
       self.hide()
@@ -196,12 +192,25 @@ class EnemySoldier(Soldier):
 
   def attackOp(self):
     self.attackTimer = threading.Timer(self.interval,self.attackOp)
-    while(True):
-      attackIndex = random.randrange(0,5)
-      if stageObject.friend.friends[attackIndex] != None:
-        break
-    
-    stageObject.friend.friends[attackIndex].receiveAttack(self.attack,attackIndex)
+
+    attackCastle = True
+
+    for i in range(0,5):
+      if stageObject.friend.friends[i] != None:
+        attackCastle = False
+
+    if attackCastle:
+      try:
+        stageObject.friend.castle.receiveAttack(self.attack)
+      except:
+        self.attackTimer.cancel()
+    else:
+      while(True):
+        attackIndex = random.randrange(0,5)
+        if stageObject.friend.friends[attackIndex] != None:
+          break 
+      stageObject.friend.friends[attackIndex].receiveAttack(self.attack,attackIndex)
+
     self.attackTimer.start()
 
   def movePos(self):
@@ -232,11 +241,11 @@ class EnemySoldier(Soldier):
 
 class DogSoldier(EnemySoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/dog_move1.png",name="dog",index = index,move = 25,attack = 25,power = 90,interval = 1)
+    super().__init__(file="res/character/dog_move1.png",name="dog",index = index,move = 25,attack = 20,power = 100,interval = 1)
 
 class SnakeSoldier(EnemySoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/snake_move1.png",name="snake",index = index,move = 40,attack = 30,power = 1000,interval = 1)
+    super().__init__(file="res/character/snake_move1.png",name="snake",index = index,move = 40,attack = 30,power = 500,interval = 1)
 
 class SheepSoldier(EnemySoldier):
   def __init__(self,index):
@@ -253,10 +262,7 @@ class CySoldier(EnemySoldier):
 class FriendSoldier(Soldier):
   def receiveAttack(self,damage,index):
     self.power = self.power - damage
-    print('friend')
-    print(self.power)
     if self.power < 0:
-      print('dead')
       stageObject.friend.friends[index] = None
       self.hide()
       self.attack = 0
@@ -264,12 +270,25 @@ class FriendSoldier(Soldier):
 
   def attackOp(self):
     self.attackTimer = threading.Timer(self.interval,self.attackOp)
-    while(True):
-      attackIndex = random.randrange(0,5)
-      if stageObject.enemy.friends[attackIndex] != None:
-        break
-    
-    stageObject.enemy.friends[attackIndex].receiveAttack(self.attack,attackIndex)
+
+    attackCastle = True
+
+    for i in range(0,5):
+      if stageObject.enemy.friends[i] != None:
+        attackCastle = False
+
+    if attackCastle:
+      try:
+        stageObject.enemy.castle.receiveAttack(self.attack)
+      except:
+        self.attackTimer.cancel()
+    else:
+      while(True):
+        attackIndex = random.randrange(0,5)
+        if stageObject.enemy.friends[attackIndex] != None:
+          break 
+      stageObject.enemy.friends[attackIndex].receiveAttack(self.attack,attackIndex)
+
     self.attackTimer.start()
   def movePos(self):
     self.moveTimer = threading.Timer(1, self.movePos)
@@ -301,11 +320,11 @@ class FriendSoldier(Soldier):
 
 class CatSoldier(FriendSoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/cat1_move1.png",name="cat1",index = index,price = 50,move = 50,attack = 20,power = 130,interval = 1)
+    super().__init__(file="res/character/cat1_move1.png",name="cat1",index = index,price = 50,move = 50,attack = 30,power = 130,interval = 1)
 
 class TankCatSoldier(FriendSoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/tankcat_move1.png",name="tankcat",index = index,price = 100,move = 40,attack = 5,power = 500,interval = 2)
+    super().__init__(file="res/character/tankcat_move1.png",name="tankcat",index = index,price = 100,move = 40,attack = 10,power = 600,interval = 2)
 
 class AxeCatSoldier(FriendSoldier):
   def __init__(self,index):
@@ -325,6 +344,32 @@ class Castle():
     self.type = type
 
 class FriendCastle(Castle):
+  def displayStatus(self):
+    self.timer = threading.Timer(1, self.displayStatus)
+
+    rest = self.status
+    self.statThou.setImage(f"res/etc/{int(self.status / 1000)}_mini.png")
+    rest = self.status - int(self.status / 1000)*1000
+    self.statHun.setImage(f"res/etc/{int(rest / 100)}_mini.png")
+    rest = rest - int(rest / 100)*100
+    self.statTens.setImage(f"res/etc/{int(rest / 10)}_mini.png")
+    rest = rest - int(rest / 10)*10
+    self.statUnits.setImage(f"res/etc/{rest}_mini.png")
+ 
+    self.timer.start()
+
+  def receiveAttack(self,damage):
+    if self.status - damage <= 0:
+      victoryImg = Object("res/wallpaper/fail.png")
+      victoryImg.locate(nowScene,200,300)
+      victoryImg.show()
+      stageObject.enemy.endTimer()
+      stageObject.friend.endTimer()
+      time.sleep(2)
+      endGame()
+    else:
+      self.status = self.status - damage
+
   def __init__(self,type,status):
     super().__init__(type,status)
     self.statTotImg = Object(f"res/etc/{stageNum}_stat.png")
@@ -342,16 +387,43 @@ class FriendCastle(Castle):
     self.statHun.locate(nowScene,820,450)
     self.statHun.setScale(0.5)
     self.statHun.show()
-    self.statHun = Object(f"res/etc/0_mini.png")
-    self.statHun.locate(nowScene,845,450)
-    self.statHun.setScale(0.5)
-    self.statHun.show()
-    self.statHun = Object(f"res/etc/0_mini.png")
-    self.statHun.locate(nowScene,870,450)
-    self.statHun.setScale(0.5)
-    self.statHun.show()
+    self.statTens = Object(f"res/etc/0_mini.png")
+    self.statTens.locate(nowScene,845,450)
+    self.statTens.setScale(0.5)
+    self.statTens.show()
+    self.statUnits = Object(f"res/etc/0_mini.png")
+    self.statUnits.locate(nowScene,870,450)
+    self.statUnits.setScale(0.5)
+    self.statUnits.show()
+    self.displayStatus()
 
 class EnemyCastle(Castle):
+  def displayStatus(self):
+    self.timer = threading.Timer(1, self.displayStatus)
+
+    rest = self.status
+    self.statThou.setImage(f"res/etc/{int(self.status / 1000)}_mini.png")
+    rest = self.status - int(self.status / 1000)*1000
+    self.statHun.setImage(f"res/etc/{int(rest / 100)}_mini.png")
+    rest = rest - int(rest / 100)*100
+    self.statTens.setImage(f"res/etc/{int(rest / 10)}_mini.png")
+    rest = rest - int(rest / 10)*10
+    self.statUnits.setImage(f"res/etc/{rest}_mini.png")
+ 
+    self.timer.start()
+
+  def receiveAttack(self,damage):
+    if self.status - damage <= 0:
+      victoryImg = Object("res/wallpaper/victory.png")
+      victoryImg.locate(nowScene,200,300)
+      victoryImg.show()
+      stageObject.enemy.endTimer()
+      stageObject.friend.endTimer()
+      time.sleep(2)
+      endGame()
+    else:
+      self.status = self.status - damage
+
   def __init__(self,type,status):
     super().__init__(type,status)
     self.statTotImg = Object(f"res/etc/{stageNum}_stat.png")
@@ -369,14 +441,15 @@ class EnemyCastle(Castle):
     self.statHun.locate(nowScene,245,450)
     self.statHun.setScale(0.5)
     self.statHun.show()
-    self.statHun = Object(f"res/etc/0_mini.png")
-    self.statHun.locate(nowScene,270,450)
-    self.statHun.setScale(0.5)
-    self.statHun.show()
-    self.statHun = Object(f"res/etc/0_mini.png")
-    self.statHun.locate(nowScene,295,450)
-    self.statHun.setScale(0.5)
-    self.statHun.show()
+    self.statTens = Object(f"res/etc/0_mini.png")
+    self.statTens.locate(nowScene,270,450)
+    self.statTens.setScale(0.5)
+    self.statTens.show()
+    self.statUnits = Object(f"res/etc/0_mini.png")
+    self.statUnits.locate(nowScene,295,450)
+    self.statUnits.setScale(0.5)
+    self.statUnits.show()
+    self.displayStatus()
 
 class Point(Object):  # 지도에서 각 지역별 표시
   def __init__(self,file,type):
@@ -532,7 +605,7 @@ def exitBtn_onClick(x,y,action):
   stageObject.friend.endTimer()
   prevScene.enter()
   hidePauseBox()
-  del stageObject
+  stageObject = None
 exitBtn.onMouseAction = exitBtn_onClick
 
 def continueBtn_onClick(x,y,action):
