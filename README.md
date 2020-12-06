@@ -1,6 +1,8 @@
 # 냥코대전쟁
 
 ## 게임 소개
+냥코대전쟁은 PONOS에서 개발한 모바일 게임 냥코대전쟁을 파이썬으로 구현한 게임입니다.
+<br/>
 ### 아군 캐릭터 소개
 ![Frame 3](https://user-images.githubusercontent.com/29995295/101281969-9e864380-3815-11eb-810a-2a2e5bf692ec.png)
 ![Frame 2](https://user-images.githubusercontent.com/29995295/101281975-a80fab80-3815-11eb-97d9-1e6a65497285.png)
@@ -53,3 +55,6 @@
 ![6](https://user-images.githubusercontent.com/29995295/101281459-544f9300-3812-11eb-87dc-855988d33535.PNG)
 아군 성의 체력이 0이 되면 패배합니다.
 <br/>
+
+## 참고 사이트
+[냥코대전쟁](https://namu.wiki/w/냥코%20대전쟁)
