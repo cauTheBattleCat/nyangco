@@ -1,5 +1,7 @@
 # 냥코대전쟁
 
+중앙대학교 오픈소스SW와 파이썬 프로그래밍 03분반 팀 프로젝트입니다.
+
 ## 게임 소개
 [게임 소개 동영상] (https://www.youtube.com/watch?v=50tOZpziz8w&feature=youtu.be)
 <br/>
