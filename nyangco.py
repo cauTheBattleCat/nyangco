@@ -4,6 +4,10 @@ import time
 import threading
 import random
 
+setGameOption(GameOption.ROOM_TITLE, False)
+setGameOption(GameOption.INVENTORY_BUTTON, False)
+setGameOption(GameOption.MESSAGE_BOX_BUTTON, False)
+
 mainScene = Scene("메인", "res/wallpaper/main.png")
 mapScene = Scene("지도", "res/wallpaper/ingame2.png")
 startScene = Scene("공격개시","res/wallpaper/ingame.png")
@@ -182,6 +186,9 @@ class Soldier(Object):
     self.move = move
 
 class EnemySoldier(Soldier):
+  def endGame(self):
+    self.hide()
+    self.attackTimer.cancel()
   def receiveAttack(self,damage,index):
     self.power = self.power - damage
     if self.power < 0:
@@ -260,6 +267,9 @@ class CySoldier(EnemySoldier):
     super().__init__(file="res/character/cy_move1.png",name="cy",index = index,move = 50,attack = 300,power = 2000,interval = 8)
 
 class FriendSoldier(Soldier):
+  def endGame(self):
+    self.hide()
+    self.attackTimer.cancel()
   def receiveAttack(self,damage,index):
     self.power = self.power - damage
     if self.power < 0:
@@ -269,27 +279,29 @@ class FriendSoldier(Soldier):
       self.attackTimer.cancel()
 
   def attackOp(self):
-    self.attackTimer = threading.Timer(self.interval,self.attackOp)
+    if stageObject != None:
 
-    attackCastle = True
+      self.attackTimer = threading.Timer(self.interval,self.attackOp)
 
-    for i in range(0,5):
-      if stageObject.enemy.friends[i] != None:
-        attackCastle = False
+      attackCastle = True
 
-    if attackCastle:
-      try:
-        stageObject.enemy.castle.receiveAttack(self.attack)
-      except:
-        self.attackTimer.cancel()
-    else:
-      while(True):
-        attackIndex = random.randrange(0,5)
-        if stageObject.enemy.friends[attackIndex] != None:
-          break 
-      stageObject.enemy.friends[attackIndex].receiveAttack(self.attack,attackIndex)
+      for i in range(0,5):
+          if stageObject.enemy.friends[i] != None:
+            attackCastle = False
 
-    self.attackTimer.start()
+      if attackCastle:
+        try:
+          stageObject.enemy.castle.receiveAttack(self.attack)
+        except:
+          self.attackTimer.cancel()
+      else:
+        while(True):
+          attackIndex = random.randrange(0,5)
+          if stageObject.enemy.friends[attackIndex] != None:
+            break 
+        stageObject.enemy.friends[attackIndex].receiveAttack(self.attack,attackIndex)
+
+      self.attackTimer.start()
   def movePos(self):
     self.moveTimer = threading.Timer(1, self.movePos)
     if (self.index == 0 and self.xPos - self.move >= 610) or (self.index == 1 and self.xPos - self.move >= 625) or (self.index == 2 and self.xPos - self.move >= 650) or (self.index == 3 and self.xPos - self.move >= 675) or (self.index == 4 and self.xPos - self.move >= 700):
@@ -499,8 +511,6 @@ pauseImg = Object("res/etc/pauseimg.png")
 pauseImg.locate(stage1, 400,200)
 continueBtn = Object("res/etc/continue.png")
 continueBtn.locate(stage1, 530,330)
-exitBtn = Object("res/etc/exit.png")
-exitBtn.locate(stage1, 530,230)
 
 class CatBtn(Object):
   def onBtnClick(self,x,y,action):
@@ -588,7 +598,6 @@ def locatePauseBox(stage):
     pauseBtn.locate(stage, 0,600)
     pauseImg.locate(stage, 400,200)
     continueBtn.locate(stage, 530,330)
-    exitBtn.locate(stage, 530,230)
 
 def backBtn_onClick(x,y,action):
   prevScene.enter()
@@ -597,16 +606,7 @@ backBtn.onMouseAction = backBtn_onClick
 def pauseBtn_onClick(x,y,action):
   pauseImg.show()
   continueBtn.show()
-  exitBtn.show()
 pauseBtn.onMouseAction = pauseBtn_onClick
-
-def exitBtn_onClick(x,y,action):
-  global stageObject
-  stageObject.friend.endTimer()
-  prevScene.enter()
-  hidePauseBox()
-  stageObject = None
-exitBtn.onMouseAction = exitBtn_onClick
 
 def continueBtn_onClick(x,y,action):
   hidePauseBox()
@@ -615,13 +615,5 @@ continueBtn.onMouseAction = continueBtn_onClick
 def hidePauseBox():
   pauseImg.hide()
   continueBtn.hide()
-  exitBtn.hide()
 
 startGame(mainScene)
-
-#구현해야하는 부분
-#- 적군 캐릭터 생성
-#- 각 캐릭터별 속성 정의
-#- 공격 구현
-
-#한국-일본-중국 순서
