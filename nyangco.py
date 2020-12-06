@@ -69,7 +69,7 @@ class Enemy():
 
 
   def __init__(self,castleStat,stage):
-    self.castle = Castle(ENEMY,castleStat)
+    self.castle = EnemyCastle(ENEMY,castleStat)
     self.friends = [None for i in range(5)]
     self.i = 0
     
@@ -153,7 +153,7 @@ class Friend():
   def __init__(self,moneyMax,castleStat,stage):
     self.moneyMax = moneyMax
     self.moneyNow = 0
-    self.castle = Castle(FRIEND,castleStat)
+    self.castle = FriendCastle(FRIEND,castleStat)
     self.friends = [None for i in range(5)]
     self.moneyTotImg = Object(f"res/etc/{stage}_money.png")
     self.moneyTotImg.locate(nowScene,1000,650)
@@ -212,11 +212,13 @@ class EnemySoldier(Soldier):
     else:
       self.moveTimer.cancel()
       self.attackOp()
+      self.setImage(f"res/character/{self.name}_atk2.png")
 
     self.moveTimer.start()
 
-  def __init__(self,file,index,move,attack,power,interval,xPos = 100,yPos = 180):
+  def __init__(self,file,name,index,move,attack,power,interval,xPos = 100,yPos = 180):
     super().__init__(file,move)
+    self.name = name
     self.attack = attack
     self.power = power
     self.interval = interval
@@ -230,23 +232,23 @@ class EnemySoldier(Soldier):
 
 class DogSoldier(EnemySoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/dog_move1.png",index = index,move = 25,attack = 25,power = 90,interval = 1)
+    super().__init__(file="res/character/dog_move1.png",name="dog",index = index,move = 25,attack = 25,power = 90,interval = 1)
 
 class SnakeSoldier(EnemySoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/snake_move1.png",index = index,move = 40,attack = 30,power = 1000,interval = 1)
+    super().__init__(file="res/character/snake_move1.png",name="snake",index = index,move = 40,attack = 30,power = 1000,interval = 1)
 
 class SheepSoldier(EnemySoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/baabaa_move1.png",index = index,move = 20,attack = 100,power = 350,interval = 2)
+    super().__init__(file="res/character/baabaa_move1.png",name="baabaa",index = index,move = 20,attack = 100,power = 350,interval = 2)
 
 class BearSoldier(EnemySoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/bear_move1.png",index = index,move = 50,attack = 200,power = 500,interval = 3)
+    super().__init__(file="res/character/bear_move1.png",name="bear",index = index,move = 50,attack = 200,power = 500,interval = 3)
 
 class CySoldier(EnemySoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/cy_move1.png",index = index,move = 50,attack = 300,power = 2000,interval = 8)
+    super().__init__(file="res/character/cy_move1.png",name="cy",index = index,move = 50,attack = 300,power = 2000,interval = 8)
 
 class FriendSoldier(Soldier):
   def receiveAttack(self,damage,index):
@@ -277,11 +279,13 @@ class FriendSoldier(Soldier):
     else:
       self.moveTimer.cancel()
       self.attackOp()
+      self.setImage(f"res/character/{self.name}_atk2.png")
 
     self.moveTimer.start()
 
-  def __init__(self,file,index,price,move,attack,power,interval,xPos = 1000,yPos = 180):
+  def __init__(self,file,name,index,price,move,attack,power,interval,xPos = 1000,yPos = 180):
     super().__init__(file,move)
+    self.name = name
     self.attack = attack
     self.power = power
     self.interval = interval
@@ -297,28 +301,82 @@ class FriendSoldier(Soldier):
 
 class CatSoldier(FriendSoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/cat1_move1.png",index = index,price = 50,move = 50,attack = 20,power = 130,interval = 1)
+    super().__init__(file="res/character/cat1_move1.png",name="cat1",index = index,price = 50,move = 50,attack = 20,power = 130,interval = 1)
 
 class TankCatSoldier(FriendSoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/tankcat_move1.png",index = index,price = 100,move = 40,attack = 5,power = 500,interval = 2)
+    super().__init__(file="res/character/tankcat_move1.png",name="tankcat",index = index,price = 100,move = 40,attack = 5,power = 500,interval = 2)
 
 class AxeCatSoldier(FriendSoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/axecat_move1.png",index = index,price = 200,move = 60,attack = 60,power = 150,interval = 1)
+    super().__init__(file="res/character/axecat_move1.png",name="axecat",index = index,price = 200,move = 60,attack = 60,power = 150,interval = 1)
 
 class BirdCatSoldier(FriendSoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/cat_bird_move1.png",index = index,price = 400,move = 50,attack = 250,power = 700,interval = 2)
+    super().__init__(file="res/character/cat_bird_move1.png",name="cat_bird",index = index,price = 400,move = 50,attack = 250,power = 700,interval = 2)
 
 class TitanCatSoldier(FriendSoldier):
   def __init__(self,index):
-    super().__init__(file="res/character/titan_move1.png",index = index,price = 1000,move = 50,attack = 200,power = 800,interval = 4)
+    super().__init__(file="res/character/titan_move1.png",name="titan",index = index,price = 1000,move = 50,attack = 200,power = 800,interval = 4)
 
 class Castle():
   def __init__(self,type,status):
     self.status = status
     self.type = type
+
+class FriendCastle(Castle):
+  def __init__(self,type,status):
+    super().__init__(type,status)
+    self.statTotImg = Object(f"res/etc/{stageNum}_stat.png")
+    self.statTotImg.locate(nowScene,930,450)
+    self.statTotImg.show()
+    self.sliceImg = Object(f"res/etc/slice_mini.png")
+    self.sliceImg.locate(nowScene,900,450)
+    self.sliceImg.setScale(0.5)
+    self.sliceImg.show()
+    self.statThou = Object(f"res/etc/{stageNum}_mini.png")
+    self.statThou.locate(nowScene,795,450)
+    self.statThou.setScale(0.5)
+    self.statThou.show()
+    self.statHun = Object(f"res/etc/0_mini.png")
+    self.statHun.locate(nowScene,820,450)
+    self.statHun.setScale(0.5)
+    self.statHun.show()
+    self.statHun = Object(f"res/etc/0_mini.png")
+    self.statHun.locate(nowScene,845,450)
+    self.statHun.setScale(0.5)
+    self.statHun.show()
+    self.statHun = Object(f"res/etc/0_mini.png")
+    self.statHun.locate(nowScene,870,450)
+    self.statHun.setScale(0.5)
+    self.statHun.show()
+
+class EnemyCastle(Castle):
+  def __init__(self,type,status):
+    super().__init__(type,status)
+    self.statTotImg = Object(f"res/etc/{stageNum}_stat.png")
+    self.statTotImg.locate(nowScene,350,450)
+    self.statTotImg.show()
+    self.sliceImg = Object(f"res/etc/slice_mini.png")
+    self.sliceImg.locate(nowScene,325,450)
+    self.sliceImg.setScale(0.5)
+    self.sliceImg.show()
+    self.statThou = Object(f"res/etc/{stageNum}_mini.png")
+    self.statThou.locate(nowScene,220,450)
+    self.statThou.setScale(0.5)
+    self.statThou.show()
+    self.statHun = Object(f"res/etc/0_mini.png")
+    self.statHun.locate(nowScene,245,450)
+    self.statHun.setScale(0.5)
+    self.statHun.show()
+    self.statHun = Object(f"res/etc/0_mini.png")
+    self.statHun.locate(nowScene,270,450)
+    self.statHun.setScale(0.5)
+    self.statHun.show()
+    self.statHun = Object(f"res/etc/0_mini.png")
+    self.statHun.locate(nowScene,295,450)
+    self.statHun.setScale(0.5)
+    self.statHun.show()
 
 class Point(Object):  # 지도에서 각 지역별 표시
   def __init__(self,file,type):
@@ -470,9 +528,11 @@ def pauseBtn_onClick(x,y,action):
 pauseBtn.onMouseAction = pauseBtn_onClick
 
 def exitBtn_onClick(x,y,action):
+  global stageObject
   stageObject.friend.endTimer()
   prevScene.enter()
   hidePauseBox()
+  del stageObject
 exitBtn.onMouseAction = exitBtn_onClick
 
 def continueBtn_onClick(x,y,action):
