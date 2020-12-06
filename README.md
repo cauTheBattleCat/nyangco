@@ -1,6 +1,7 @@
 # 냥코대전쟁
 
 ## 게임 소개
+[게임 소개 동영상] (https://www.youtube.com/watch?v=50tOZpziz8w&feature=youtu.be)
 냥코대전쟁은 PONOS에서 개발한 모바일 게임 냥코대전쟁을 파이썬으로 구현한 게임입니다.
 <br/>
 ### 아군 캐릭터 소개
